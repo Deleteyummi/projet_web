@@ -1,6 +1,56 @@
 <?php
+require_once "../controllers/ProductsController.php";
+require_once "../controllers/CartController.php";
+require_once "../controllers/CartProductsController.php";
+require_once "../models/cartproducts.php";
+require_once "../models/cart.php";
 
-include '../models/shop_model.php';
+$productController = new ProductsController();
+$cartController = new CartController();
+$cartProductController = new CartProductsController();
+$user = 1;
+
+if(isset($_POST['product_id']) && isset($_POST['product_price']) && isset($_POST['product_quantity'])){
+    $id_cart = $cartController->getNotConfirmedCart($user);
+    $quantity = $_POST['product_quantity'];
+    $product_id = $_POST['product_id'];
+    $product_price = $_POST['product_price'];
+    if($id_cart){
+        $cart = $cartController->getCart($id_cart);
+        $cp = $cartProductController->getOneCartProduct($id_cart, $product_id);
+        if($cp){
+            $updatedPrice = $quantity * $product_price;
+            $updatedQuantity = $cp['quantite'] + $quantity;
+            $updatedTotal = $cart['total'] + $updatedPrice;
+            $cartController->updateTotal($updatedTotal, $id_cart);
+            $cartProductController->updateQuantite($updatedQuantity, $id_cart, $product_id);
+            header("Location: shop.php");
+        }else {
+            $price = $quantity * $product_price;
+            $updatedTotal = $cart['total'] + $price;
+            $cartController->updateTotal($updatedTotal, $id_cart);
+            $cp = new cartproducts(
+                    $id_cart, $product_id, $quantity
+            );
+            $cartProductController->addCartProduct($cp);
+            header("Location: shop.php");
+        }
+    } else {
+        $total = $quantity * $product_price;
+        $cart = new Cart(
+                0,$user,$total,"","Non confirmé"
+        );
+        $cartController->addCart($cart);
+        $id_cart = $cartController->getNotConfirmedCart($user);
+        $cp = new cartproducts(
+            $id_cart, $product_id, $quantity
+        );
+        $cartProductController->addCartProduct($cp);
+        header("Location: shop.php");
+    }
+}
+
+$products = $productController->showProducts();
 ?>
 
 <!DOCTYPE html>
@@ -37,7 +87,7 @@ include '../models/shop_model.php';
 
 <div class="heading">
    <h3>our shop</h3>
-   <p> <a href="home.php">home</a> / shop </p>
+   <p> <a href="#">home</a> / shop </p>
 </div>
 
 <section class="products">
@@ -46,24 +96,17 @@ include '../models/shop_model.php';
 
    <div class="box-container">
    <?php
-   // Prepare the query to select all products
-   $select_products = $conn->prepare("SELECT * FROM `products`");
-   $select_products->execute();
-
    // Check if any products were returned
-   if ($select_products->rowCount() > 0) {
-      // Fetch products as an associative array
-      while ($fetch_products = $select_products->fetch(PDO::FETCH_ASSOC)) {
-         // Your HTML and PHP for displaying each product go here
+   if ($products) {
+      foreach ($products as $product) {
 ?>
  <form action="" method="post" class="box">
-      <img class="image" src="images/<?php echo $fetch_products['image']; ?>" alt="">
-      <div class="name"><?php echo $fetch_products['name']; ?></div>
-      <div class="price">$<?php echo $fetch_products['price']; ?>/-</div>
+      <img class="image" src="images/<?php echo $product['image']; ?>" alt="">
+      <div class="name"><?php echo $product['name']; ?></div>
+      <div class="price">TND<?php echo $product['price']; ?>/-</div>
       <input type="number" min="1" name="product_quantity" value="1" class="qty">
-      <input type="hidden" name="product_name" value="<?php echo $fetch_products['name']; ?>">
-      <input type="hidden" name="product_price" value="<?php echo $fetch_products['price']; ?>">
-      <input type="hidden" name="product_image" value="<?php echo $fetch_products['image']; ?>">
+      <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
+      <input type="hidden" name="product_price" value="<?php echo $product['price']; ?>">
       <input type="submit" value="add to cart" name="add_to_cart" class="btn">
      </form>
       <?php

@@ -1,7 +1,63 @@
 <?php
+require_once "../controllers/CartController.php";
+require_once "../controllers/ProductsController.php";
+require_once "../controllers/CartProductsController.php";
+require_once "../controllers/mail.php";
 
-include '../models/cart_model.php';
+$cartController = new CartController();
+$productsController = new ProductsController();
+$cartProductsController = new CartProductsController();
 
+$user = 1;
+$carts = $cartController->joinCartCartProductsByUser($user);
+if(isset($_GET['delete']) && isset($_GET['id_cart']) && isset($_GET['id_product'])){
+    $id_cart = $_GET['id_cart'];
+    $product_id = $_GET['id_product'];
+    $cart = $cartController->getCart($id_cart);
+    $cp = $cartProductsController->getOneCartProduct($id_cart, $product_id);
+    $nbr = $cartController->countOrderActive($user);
+    $product = $productsController->getProduct($product_id);
+    if($nbr > 1){
+        $updatedPrice = $cart['total'] - ( $cp['quantite'] * $product['price']);
+        $cartController->updateTotal($updatedPrice, $id_cart);
+        $cartProductsController->deleteCartProduct($id_cart, $product_id);
+        header("Location: cart.php");
+    } else {
+        $cartController->deleteCart($id_cart);
+        header("Location: shop.php");
+    }
+}
+
+if(isset($_POST['cart_id']) && isset($_POST['product_id']) && isset($_POST['cart_quantity'])) {
+    $product_id = $_POST['product_id'];
+    $cart_id = $_POST['cart_id'];
+    $cart_quantity = $_POST['cart_quantity'];
+    $cp = $cartProductsController->getOneCartProduct($cart_id, $product_id);
+    $cart = $cartController->getCart($cart_id);
+    $product = $productsController->getProduct($product_id);
+    $initPrice = $cart['total'] - ( $cp['quantite'] * $product['price']);
+    $updatedPrice = $initPrice + ($cart_quantity * $product['price']);
+    $cartController->updateTotal($updatedPrice, $cart_id);
+    $cartProductsController->updateQuantite($cart_quantity, $cart_id, $product_id);
+    header("Location: cart.php");
+}
+
+if(isset($_GET['confirm']) && isset($_GET['id_cart'])){
+    $cartController->updateStatus($_GET['id_cart'], "Confirmé");
+    $cart = $cartController->getCart($_GET['id_cart']);
+    $date = $cart['date_cart'];
+    $montant = $cart['total'];
+    $email_content = array(
+        'Subject' => 'Nouvelle Commande',
+        'body' => "Bonjour Mr/Mme ,
+       Vous Avez Une Nouvelle Commande : <br>
+       Date : $date<br>
+       Montant : $montant TND<br>
+       cordialement,"
+    );
+    sendemail("mohamedkoussay.elkar@esprit.tn",$email_content);
+    header("Location: shop.php");
+}
 ?>
 
 <!DOCTYPE html>
@@ -48,54 +104,40 @@ include '../models/cart_model.php';
 
    <div class="box-container">
    <?php
-      $grand_total = 0;
-
-      try {
-          // Prepare and execute the query to select all items from the cart for the current user
-          $stmt = $conn->prepare("SELECT * FROM `cart` WHERE user_id = :user_id");
-          $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
-          $stmt->execute();
-
-          // Check if there are any items in the cart
-          if ($stmt->rowCount() > 0) {
-              while ($fetch_cart = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                  // Calculate the sub-total for each item
-                  $sub_total = $fetch_cart['quantity'] * $fetch_cart['price'];
-                  $grand_total += $sub_total;
+          if ($carts) {
+              foreach ($carts as $cart) {
+                  $product = $productsController->getProduct($cart['id_product']);
                   ?>
                   <div class="box">
-                     <a href="cart.php?delete=<?php echo $fetch_cart['id']; ?>" class="fas fa-times" onclick="return confirm('delete this from cart?');"></a>
-                     <img src="images/<?php echo $fetch_cart['image']; ?>" alt="">
-                     <div class="name"><?php echo $fetch_cart['name']; ?></div>
-                     <div class="price">$<?php echo $fetch_cart['price']; ?>/-</div>
+                     <a href="cart.php?delete=1&id_cart=<?php echo $cart['id_cart']; ?>&id_product=<?php echo $product['id']; ?>" class="fas fa-times" onclick="return confirm('delete this from cart?');"></a>
+                     <img src="images/<?php echo $product['image']; ?>" alt="">
+                     <div class="name"><?php echo $product['name']; ?></div>
+                     <div class="price">TND<?php echo $product['price']; ?>/-</div>
                      <form action="" method="post">
-                        <input type="hidden" name="cart_id" value="<?php echo $fetch_cart['id']; ?>">
-                        <input type="number" min="1" name="cart_quantity" value="<?php echo $fetch_cart['quantity']; ?>">
+                        <input type="hidden" name="cart_id" value="<?php echo $cart['id_cart']; ?>">
+                         <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
+                        <input type="number" required min="1" name="cart_quantity" value="<?php echo $cart['quantite']; ?>">
                         <input type="submit" name="update_cart" value="update" class="option-btn">
                      </form>
-                     <div class="sub-total"> sub total : <span>$<?php echo $sub_total; ?>/-</span> </div>
+                     <div class="sub-total"> sub total : <span>$<?php echo $product['price'] * $cart['quantite']; ?>/-</span> </div>
                   </div>
                   <?php
               }
           } else {
               echo '<p class="empty">your cart is empty</p>';
           }
-      } catch (PDOException $e) {
-          echo 'Error: ' . $e->getMessage();
-      }
    ?>
 </div>
 
 
-   <div style="margin-top: 2rem; text-align:center;">
-      <a href="cart.php?delete_all" class="delete-btn <?php echo ($grand_total > 1)?'':'disabled'; ?>" onclick="return confirm('delete all from cart?');">delete all</a>
-   </div>
 
    <div class="cart-total">
-      <p>grand total : <span>$<?php echo $grand_total; ?>/-</span></p>
+      <p>grand total : <span>TND<?php echo $cart['total']; ?>/-</span></p>
       <div class="flex">
          <a href="shop.php" class="option-btn">continue shopping</a>
-         <a href="checkout.php" class="btn <?php echo ($grand_total > 1)?'':'disabled'; ?>">proceed to checkout</a>
+          <?php if($carts){ ?>
+         <a href="cart.php?id_cart=<?php echo $carts[0]['id_cart']; ?>&confirm=1" class="btn">confirm order</a>
+          <?php }?>
       </div>
    </div>
 

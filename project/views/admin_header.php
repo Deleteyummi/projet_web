@@ -30,6 +30,9 @@ if(isset($message)){
                     <a href="admin_products.php" class="navbar__links">products</a>
                 </li>
                 <li class="navbar__item">
+                    <a href="admin_orders.php" class="navbar__links">Orders</a>
+                </li>
+                <li class="navbar__item">
                     <a href="admin_users.php" class="navbar__links">Users</a>
                 </li>
                 <li class="navbar__item">

@@ -1,4 +1,6 @@
 <?php
+require_once "../controllers/CartController.php";
+
 if(isset($message)){
    foreach($message as $message){
       echo '
@@ -9,6 +11,9 @@ if(isset($message)){
       ';
    }
 }
+$user = 1; // à modifier pendant l intégration
+$cartController = new CartController();
+$nbrCart = $cartController->countOrderActive($user)
 ?>
 
 
@@ -17,9 +22,9 @@ if(isset($message)){
 <div class="header-1">
    <div class="flex">
       <div class="share">
-      <a href="home.php" class="logo">CultureHub <i class="fa-solid fa-globe"></i></a>
+      <a href="#" class="logo">CultureHub <i class="fa-solid fa-globe"></i></a>
       </div>
-      <p> new <a href="login.php">login</a> | <a href="register.php">register</a> </p>
+      <p> new <a href="#">login</a> | <a href="#">register</a> </p>
    </div>
 </div>
 
@@ -39,26 +44,16 @@ if(isset($message)){
             <a href="search_page.php" class="fas fa-search"></a>
             <div id="user-btn" class="fas fa-user"></div>
             <?php
-            try {
-               // Prepare the query to select all items from the cart for the current user
-               $stmt = $conn->prepare("SELECT * FROM `cart` WHERE user_id = :user_id");
-               $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
-               $stmt->execute();
 
-               // Get the number of rows returned by the query
-               $cart_rows_number = $stmt->rowCount();
-            } catch (PDOException $e) {
-               echo 'Error: ' . $e->getMessage();
-            }
          ?>
 
-            <a href="cart.php"> <i class="fas fa-shopping-cart"></i> <span>(<?php echo $cart_rows_number; ?>)</span> </a>
+            <a href="cart.php"> <i class="fas fa-shopping-cart"></i> <span>(<?php echo $nbrCart; ?>)</span> </a>
          </div>
       
       <div class="user-box">
-            <p>username : <span><?php echo $_SESSION['user_name']; ?></span></p>
-            <p>email : <span><?php echo $_SESSION['user_email']; ?></span></p>
-            <a href="logout.php" class="delete-btn">logout</a>
+            <p>username : <span>Koussay</span></p>
+            <p>email : <span>koussay@esprit.tn</span></p>
+            <a href="#" class="delete-btn">logout</a>
       </div>
    </div>
 </div>
