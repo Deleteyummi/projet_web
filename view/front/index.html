@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Ensure body fills the entire viewport */
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Style for the Spline viewer container */
+        .spline-viewer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Style for the play icon */
+        #play-button {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 10; /* Ensures the button is above the Spline viewer */
+            width: 50px;
+            height: 50px;
+            background-color: #ffcc00;
+            border: none;
+            border-radius: 50%; /* Makes it circular */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer; /* Sets the cursor to a pointer icon */
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Add an icon inside the button */
+        #play-button::before {
+            content: '▶'; /* Unicode for a play icon */
+            font-size: 24px;
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        /* Hover effect for the button */
+        #play-button:hover {
+            background-color: #ff9900;
+        }
+
+        /* Example of changing the cursor for a specific element */
+        .custom-cursor {
+            cursor: crosshair; /* Change to your desired cursor style */
+        }
+    </style>
+</head>
+<body>
+    <button id="play-button"></button>
+    
+    <audio id="background-audio">
+        <source src="bg-song/opera.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <div class="spline-viewer">
+        <spline-viewer url="https://prod.spline.design/0jbDJxw8I56H4jjo/scene.splinecode"></spline-viewer>
+    </div>
+    <div>
+        <a href="../../model/event.php">See event</a>
+    </div>
+
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.48/build/spline-viewer.js"></script>
+    <script src="code.js"></script>
+    <script>
+        // Remove the logo inside the Spline viewer
+        window.onload = function() {
+            const shadowRoot = document.querySelector('spline-viewer').shadowRoot;
+            if (shadowRoot) {
+                const logo = shadowRoot.querySelector('#logo');
+                if (logo) logo.remove();
+            }
+        };
+        // Play song when the icon is clicked
+        const playButton = document.getElementById('play-button');
+        const audio = document.getElementById('background-audio');
+
+        playButton.addEventListener('click', () => {
+            audio.play().catch((error) => {
+                console.error('Error playing the audio:', error);
+            });
+        });
+    </script>
+</body>
+</html>
