@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cool Reservation Form</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Fullscreen Spline Viewer */
+        .spline-viewer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0; /* Background layer */
+        }
+
+        /* Reservation Form Styling */
+        #reservation-form-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.9); /* Transparent white */
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            z-index: 1; /* Above background */
+            width: 350px;
+            text-align: center;
+        }
+
+        #reservation-form h3 {
+            font-size: 1.8em;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        #reservation-form label {
+            display: block;
+            font-size: 1em;
+            color: #555;
+            margin-bottom: 5px;
+            text-align: left;
+        }
+
+        #reservation-form input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        #reservation-form button {
+            background: linear-gradient(45deg, #4CAF50, #81C784);
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        #reservation-form button:hover {
+            background: linear-gradient(45deg, #81C784, #4CAF50);
+            transform: scale(1.05);
+        }
+
+        #reservation-form button:active {
+            transform: scale(0.98);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        /* For better visibility */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <!-- Spline Background -->
+    <div class="spline-viewer">
+        <spline-viewer url="https://prod.spline.design/P6YE9d1gbfCQacIt/scene.splinecode"></spline-viewer>
+    </div>
+
+    <!-- Cool Reservation Form -->
+    <div id="reservation-form-container">
+        <form id="reservation-form" method="POST" action="../../model/config_res.php">
+            <h3>Reserve a Ticket</h3>
+            <input type="hidden" name="event_id" id="event-id" value="<!-- Event ID from the event.php page -->">
+            
+            <label for="nom">Name:</label>
+            <input type="text" name="nom" id="nom" required>
+        
+            <label for="age">Age:</label>
+            <input type="number" name="age" id="age" required>
+        
+            <label for="email">Email:</label>
+            <input type="email" name="email" id="email" required>
+        
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.48/build/spline-viewer.js"></script>
+    <script>
+        // Remove Spline logo on load
+        window.onload = function () {
+            const shadowRoot = document.querySelector('spline-viewer').shadowRoot;
+            if (shadowRoot) {
+                const logo = shadowRoot.querySelector('#logo');
+                if (logo) logo.remove();
+            }
+        };
+    </script>
+</body>
+</html>

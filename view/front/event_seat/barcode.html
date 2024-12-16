@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dynamic Barcode</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+        height: 100%; /* Ensure body takes up full height */
+        overflow: hidden; /* Prevent scrolling */
+      }
+      .spline-viewer {
+        position: fixed; /* Make the 3D background fixed on the screen */
+        top: 0;
+        left: 0;
+        width: 100vw; /* Full width of the viewport */
+        height: 100vh; /* Full height of the viewport */
+        z-index: -1; /* Place it behind all other content */
+      }
+      .barcode-container {
+        display: inline-block;
+        margin-top: 50px;
+        padding: 40px;
+        border-radius: 15px;
+        background: linear-gradient(145deg, #fff, #e0e0e0);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        position: relative;
+        z-index: 1;
+        max-width: 600px;
+        margin: 50px auto;
+      }
+      .barcode-container h1 {
+        font-size: 24px;
+        color: #333;
+        margin-bottom: 20px;
+        text-transform: uppercase;
+        font-weight: bold;
+        letter-spacing: 2px;
+      }
+      .barcode {
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        height: 100px;
+        margin: 0 auto;
+        width: 300px;
+        margin-bottom: 20px;
+      }
+      .barcode div {
+        width: 3px;
+        background: #333;
+        margin: 0 2px;
+        transition: background-color 0.3s;
+      }
+      .barcode .thin {
+        height: 60%;
+      }
+      .barcode .thick {
+        height: 80%;
+      }
+      .barcode-container p {
+        font-size: 16px;
+        color: #666;
+        margin-top: 10px;
+      }
+      .barcode-text {
+        font-family: "Courier New", monospace;
+        color: #444;
+        font-size: 16px;
+        margin-top: 10px;
+      }
+      .home-button {
+        margin-top: 20px;
+        padding: 12px 25px;
+        font-size: 18px;
+        color: #fff;
+        background-color: #007bff;
+        border: none;
+        border-radius: 30px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.3s ease;
+      }
+      .home-button:hover {
+        background-color: #0056b3;
+        transform: translateY(-3px);
+      }
+      .home-button:active {
+        transform: translateY(0);
+      }
+      .barcode-container:hover .barcode div {
+        background-color: #007bff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="spline-viewer">
+        <spline-viewer url="https://prod.spline.design/rXW4FZOg-4sYX1TV/scene.splinecode"></spline-viewer>
+    </div>
+    <div class="barcode-container">
+      <h1>Your Event Barcode</h1>
+      <div class="barcode">
+        <div class="thin"></div>
+        <div class="thick"></div>
+        <div class="thin"></div>
+        <div class="thick"></div>
+        <div class="thin"></div>
+        <div class="thick"></div>
+        <div class="thin"></div>
+        <div class="thin"></div>
+        <div class="thick"></div>
+        <div class="thin"></div>
+        <div class="thick"></div>
+        <div class="thin"></div>
+        <div class="thick"></div>
+        <div class="thin"></div>
+        <div class="thin"></div>
+        <div class="thick"></div>
+      </div>
+      <p class="barcode-text" id="barcode-text"></p>
+      <h1>Your Event Details</h1>
+      <p id="event-details"></p>
+      <svg id="barcode" class="barcode"></svg>
+      <a href="../index.html" class="home-button">Return to Home Page</a>
+    </div>
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.48/build/spline-viewer.js"></script>
+    <script>
+      function generateBarcodeText() {
+        const prefix = "(00)";
+        const manufacturer = "0 0123456";
+        const product = "0000000001";
+        const checkDigit = "8";
+
+        // Combine parts to form the barcode text
+        const barcodeText = `${prefix} ${manufacturer} ${product} ${checkDigit}`;
+        return barcodeText;
+      }
+
+      document.getElementById("barcode-text").textContent = generateBarcodeText();
+    </script>
+    <script>
+      // Parse query parameters
+      const params = new URLSearchParams(window.location.search);
+      const seats = params.get('seats');
+      const event = params.get('event');
+      const price = params.get('price');
+
+      // Display event details
+      const details = `Event: ${event}, Seats: ${seats}, Total Price: TND ${price}`;
+      document.getElementById('event-details').textContent = details;
+
+      // Generate barcode with specific design
+      const barcodeValue = `Event-${event}|Seats-${seats}|Price-TND${price}`;
+      JsBarcode('#barcode', barcodeValue, {
+        format: 'CODE128',
+        lineColor: '#000',
+        width: 2,
+        height: 100,
+        displayValue: true,
+        font: 'monospace',
+        textAlign: 'center',
+        textMargin: 5,
+        fontSize: 16,
+        text: `(00) ${barcodeValue}`, // Custom bottom text format
+      });
+      
+    </script>
+    <script>
+        window.onload = function() {
+            const shadowRoot = document.querySelector('spline-viewer').shadowRoot;
+            if (shadowRoot) {
+                const logo = shadowRoot.querySelector('#logo');
+                if (logo) logo.remove();
+            }
+        };
+    </script>
+  </body>
+</html>
